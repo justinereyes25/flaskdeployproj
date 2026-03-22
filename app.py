@@ -26,12 +26,20 @@ else:
 cipher_suite = Fernet(key)
 
 def get_db_connection():
+    # Ini nga pamaagi naga-check sang MYSQL_HOST (may underscore) 
+    # ukon MYSQLHOST (wala underscore) halin sa Railway
+    host = os.environ.get("MYSQL_HOST") or os.environ.get("MYSQLHOST")
+    user = os.environ.get("MYSQL_USER") or os.environ.get("MYSQLUSER")
+    password = os.environ.get("MYSQL_PASSWORD") or os.environ.get("MYSQLPASSWORD")
+    database = os.environ.get("MYSQL_DB") or os.environ.get("MYSQLDATABASE")
+    port = int(os.environ.get("MYSQL_PORT") or os.environ.get("MYSQLPORT") or 3306)
+
     return mysql.connector.connect(
-        host=os.environ.get("MYSQL_HOST"),
-        user=os.environ.get("MYSQL_USER"),
-        password=os.environ.get("MYSQL_PASSWORD"),
-        database=os.environ.get("MYSQL_DB"),
-        port=int(os.environ.get("MYSQL_PORT", 3306))
+        host=host,
+        user=user,
+        password=password,
+        database=database,
+        port=port
     )
 
 def encrypt_data(data):
