@@ -27,12 +27,13 @@ cipher_suite = Fernet(key)
 
 def get_db_connection():
     return mysql.connector.connect(
-        host=os.getenv("MYSQLHOST"),
-        user=os.getenv("MYSQLUSER"),
-        password=os.getenv("MYSQLPASSWORD"),
-        database=os.getenv("MYSQLDATABASE"),
-        port=os.getenv("MYSQLPORT")
-)
+        db = mysql.connector.connect(
+        host=os.environ.get("MYSQL_HOST"),
+        user=os.environ.get("MYSQL_USER"),
+        password=os.environ.get("MYSQL_PASSWORD"),
+        database=os.environ.get("MYSQL_DB"),
+        port=int(os.environ.get("MYSQL_PORT", 3306))
+    )
 
 def encrypt_data(data):
     if data:
