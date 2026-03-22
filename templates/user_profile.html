@@ -1,0 +1,164 @@
+<title>{% block title %}WoodWorks{% endblock %}</title>
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='user_profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<header class="dashboard-navbar">
+    <div class="logo">WOODWORKS</div>
+    <nav>
+        <a href="{{ url_for('user_dashboard') }}">Products</a>
+        <a href="{{ url_for('user_profile') }}" class="active">Profile</a>
+        <a href="{{ url_for('user_products') }}">Purchases</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+</header>
+
+<h1 class="main-page-title">My Profile</h1>
+
+<section class="dashboard-section-block">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert {% if category %}{{ category }}{% endif %}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" id="profile-form">
+        <label>Username:</label>
+        <input type="text" name="username" value="{{ user.username }}" required>
+
+        <label>Email:</label>
+        <input type="email" name="email" value="{{ user.email }}" required>
+
+        <label>Address:</label>
+        <input type="text" name="address" value="{{ user.address }}">
+
+        <label>New Password:</label>
+        <div class="password-field">
+            <input type="password" name="password" id="profile-password" placeholder="New Password">
+            <span class="toggle-btn" id="toggle-profile-password">Show</span>
+        </div>
+        
+        <div class="password-meter">
+            <div class="password-fill" id="profile-password-fill"></div>
+        </div>
+        <small id="profile-password-warning"></small>
+
+        <label>Confirm Password:</label>
+        <div class="password-field confirm-field">
+            <input type="password" name="confirm_password" id="confirm-password" placeholder="Confirm Password">
+            <span class="toggle-btn1" id="toggle-confirm-password">Show</span>
+        </div>
+        <small id="confirm-warning"></small>
+
+        <button type="submit" id="update-btn">Update Profile</button>
+    </form>
+</section>
+
+<script>
+const passwordInput = document.getElementById("profile-password");
+const confirmInput = document.getElementById("confirm-password");
+const togglePassword = document.getElementById("toggle-profile-password");
+const toggleConfirm = document.getElementById("toggle-confirm-password");
+const warning = document.getElementById("profile-password-warning");
+const confirmWarning = document.getElementById("confirm-warning");
+const fill = document.getElementById("profile-password-fill");
+const form = document.getElementById("profile-form");
+const updateBtn = document.getElementById("update-btn");
+const confirmField = document.querySelector(".confirm-field");
+
+const strongPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+function getStrength(value) {
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[a-z]/.test(value)) score++;
+    if (/\d/.test(value)) score++;
+    if (/[\W_]/.test(value)) score++;
+    return score;
+}
+
+function validatePasswords() {
+    if (confirmInput.value.length === 0) {
+        confirmField.classList.remove("valid", "invalid");
+        confirmWarning.textContent = "";
+        updateBtn.disabled = false;
+        return;
+    }
+
+    if (confirmInput.value !== passwordInput.value) {
+        confirmWarning.textContent = "Passwords do not match";
+        confirmWarning.style.color = "red";
+        confirmField.classList.add("invalid");
+        confirmField.classList.remove("valid");
+        updateBtn.disabled = true;
+
+        confirmInput.classList.add("shake");
+        setTimeout(() => confirmInput.classList.remove("shake"), 300);
+    } else {
+        confirmWarning.textContent = "Passwords match ✔";
+        confirmWarning.style.color = "green";
+        confirmField.classList.add("valid");
+        confirmField.classList.remove("invalid");
+        updateBtn.disabled = false;
+    }
+}
+
+passwordInput.addEventListener("input", function() {
+    const value = passwordInput.value;
+    const strength = getStrength(value);
+    const width = (strength / 5) * 100;
+    fill.style.width = width + "%";
+
+    if (value.length === 0) {
+        fill.style.width = "0%";
+        warning.textContent = "";
+        validatePasswords();
+        return;
+    }
+
+    if (strength < 3) {
+        fill.style.background = "red";
+        warning.textContent = "Password is weak";
+        warning.style.color = "red";
+    } else if (strength < 5) {
+        fill.style.background = "orange";
+        warning.textContent = "Password is medium";
+        warning.style.color = "orange";
+    } else {
+        fill.style.background = "green";
+        warning.textContent = "Strong password ✔";
+        warning.style.color = "green";
+    }
+
+    validatePasswords();
+});
+
+confirmInput.addEventListener("input", validatePasswords);
+
+form.addEventListener("submit", function(event) {
+    if (passwordInput.value.length > 0) {
+        if (!strongPattern.test(passwordInput.value)) {
+            event.preventDefault();
+            warning.textContent = "Password must be at least 8 characters with letter, number & special character.";
+            warning.style.color = "red";
+            return;
+        }
+    }
+});
+
+togglePassword.addEventListener("click", function() {
+    passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+    togglePassword.textContent = passwordInput.type === "password" ? "Show" : "Hide";
+});
+
+toggleConfirm.addEventListener("click", function() {
+    confirmInput.type = confirmInput.type === "password" ? "text" : "password";
+    toggleConfirm.textContent = confirmInput.type === "password" ? "Show" : "Hide";
+});
+</script>
+{% endblock %}

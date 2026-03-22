@@ -1,0 +1,176 @@
+<title>{% block title %}WoodWorks{% endblock %}</title>
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='user_products.css') }}">
+{% endblock %}
+
+{% block content %}
+<header class="dashboard-navbar">
+    <div class="logo">WOODWORKS</div>
+    <nav>
+        <a href="{{ url_for('user_dashboard') }}">Products</a>
+        <a href="{{ url_for('user_profile') }}">Profile</a>
+        <a href="{{ url_for('user_products') }}" class="active"> Purchases</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+</header>
+
+<section class="dashboard-section-block">
+    <h2 class="section-title">My Orders</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="alerts-container"></div>
+
+    {% if purchased_products %}
+    <div class="filters-box">
+        <input type="text" id="searchInput" placeholder="Search by product name...">
+        <select id="categoryFilter">
+            <option value="">All Categories</option>
+            <option value="Sofa">Sofa</option>
+            <option value="Chair">Chair</option>
+            <option value="Lounge Chair">Lounge Chair</option>
+            <option value="Dining Chair">Dining Chair</option>
+            <option value="Stool">Stool</option>
+            <option value="Tea Table">Tea Table</option>
+            <option value="Side Table">Side Table</option>
+            <option value="Dining Table">Dining Table</option>
+            <option value="Desk">Desk</option>
+            <option value="Bench">Bench</option>
+            <option value="Console">Console</option>
+            <option value="Wall Console">Wall Console</option>
+            <option value="Bed">Bed</option>
+            <option value="Day Bed">Day Bed</option>
+            <option value="Storage">Storage</option>
+            <option value="Lighting">Lighting</option>
+            <option value="Mirror">Mirror</option>
+        </select>
+    </div>
+
+    <div class="product-grid" id="productsGrid">
+        {% for prod in purchased_products %}
+        <div class="product-card purchased-card" data-name="{{ prod.name|lower }}" data-category="{{ prod.category|lower }}">
+            
+            <div class="product-image" style="position: relative;">
+                {% if prod.image %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ prod.image) }}" alt="{{ prod.name }}">
+                {% else %}
+                    <div class="placeholder-img">No Image</div>
+                {% endif %}
+                
+                <div class="quantity-controls">
+                    <button class="qty-btn" type="button" 
+                            data-price="{{ prod.price }}" 
+                            data-id="{{ prod.purchase_id }}" 
+                            onclick="handleQtyChange(this, -1)">-</button>
+                    
+                    <span class="quantity-value">{{ prod.quantity or 1 }}</span>
+                    
+                    <button class="qty-btn" type="button" 
+                            data-price="{{ prod.price }}" 
+                            data-id="{{ prod.purchase_id }}" 
+                            onclick="handleQtyChange(this, 1)">+</button>
+                </div>
+            </div>
+
+            <div class="product-info">
+                <h3>{{ prod.name }}</h3>
+                <p class="category">{{ prod.category }}</p>
+                <p class="price">₱<span class="price-display">{{ "%.2f"|format(prod.price * (prod.quantity or 1)) }}</span></p>
+                <p class="date">Purchased: {{ prod.purchase_date }}</p>
+
+                <div class="action-buttons">
+                    <button class="buy-btn" data-product-id="{{ prod.product_id }}">Buy Again</button>
+
+                    {% if prod.status == 'pending' %}
+                        <form action="{{ url_for('cancel_purchase', purchase_id=prod.purchase_id) }}" method="POST">
+                            <button type="submit" class="btn-cancel" onclick="return confirm('Are you sure you want to cancel?');">Cancel</button>
+                        </form>
+                    {% elif prod.status == 'confirmed' %}
+                        <span class="status confirmed">{{ prod.status.capitalize() }}</span>
+                    {% else %}
+                        <span class="status cancelled">{{ prod.status.capitalize() }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+        <p class="empty-text">You have not purchased any products yet.</p>
+    {% endif %}
+</section>
+
+<script>
+function filterProducts() {
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    const category = document.getElementById('categoryFilter').value.toLowerCase();
+    const cards = document.querySelectorAll('.product-card');
+
+    cards.forEach(card => {
+        const name = card.getAttribute('data-name');
+        const cat = card.getAttribute('data-category');
+        card.style.display = name.includes(searchText) && (category === '' || cat === category) ? '' : 'none';
+    });
+}
+document.getElementById('searchInput').addEventListener('keyup', filterProducts);
+document.getElementById('categoryFilter').addEventListener('change', filterProducts);
+
+function handleQtyChange(btn, change) {
+    const unitPrice = parseFloat(btn.getAttribute('data-price'));
+    const purchaseId = btn.getAttribute('data-id');
+    
+    const card = btn.closest('.product-card');
+    const qtySpan = card.querySelector('.quantity-value');
+    const priceDisplay = card.querySelector('.price-display');
+    
+    let currentQty = parseInt(qtySpan.textContent);
+    let newQty = currentQty + change;
+    
+    if (newQty < 1) return;
+    
+    qtySpan.textContent = newQty;
+    priceDisplay.textContent = (newQty * unitPrice).toFixed(2);
+    
+    fetch('/update_purchase_qty', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ purchase_id: purchaseId, quantity: newQty })
+    });
+}
+
+document.querySelectorAll('.buy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const productId = btn.dataset.productId;
+        fetch(`/buy_again/${productId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const alertContainer = document.querySelector('.alerts-container');
+            const alert = document.createElement('div');
+            alert.className = data.success ? 'alert success' : 'alert error';
+            alert.textContent = data.message || (data.success ? "Added successfully!" : "Failed!");
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+            if (data.success) location.reload();
+        });
+    });
+});
+
+setTimeout(() => {
+    document.querySelectorAll(".alert").forEach(alert => {
+        alert.style.opacity = "0";
+        setTimeout(() => alert.remove(), 500);
+    });
+}, 3000);
+</script>
+{% endblock %}

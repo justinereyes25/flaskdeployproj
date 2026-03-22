@@ -1,0 +1,52 @@
+<title>{% block title %}WoodWorks{% endblock %}</title>
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_users.css') }}">
+{% endblock %}
+
+{% block content %}
+<header class="admin-navbar">
+    <div class="logo">WOODWORKS</div>
+    <nav>
+        <a href="{{ url_for('dashboard') }}" >Transactions</a>
+        <a href="{{ url_for('admin_products') }}">My Products</a>
+        <a href="{{ url_for('admin_users') }}" class="active"> Users</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+</header>
+
+<div class="admin-title">
+    <h2>Manage Users</h2>
+</div>
+
+<section class="admin-section">
+
+<table class="admin-table">
+    <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Action</th>
+    </tr>
+
+    {% for user in users %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+            {% if user.role != 'admin' %}
+            <form method="POST">
+                <input type="hidden" name="delete_id" value="{{ user.id }}">
+                <button type="submit" onclick="return confirm('Delete this user?')">
+                    Delete
+                </button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</section>
+{% endblock %}

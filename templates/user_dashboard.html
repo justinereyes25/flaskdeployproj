@@ -1,0 +1,195 @@
+<title>{% block title %}WoodWorks{% endblock %}</title>
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='user_dashboard.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-wrapper">
+
+<header class="dashboard-navbar">
+<div class="logo">WOODWORKS</div>
+
+<nav>
+<a href="{{ url_for('user_dashboard') }}" class="active"> Products</a>
+<a href="{{ url_for('user_profile') }}">Profile</a>
+<a href="{{ url_for('user_products') }}">Purchases</a>
+<a href="{{ url_for('logout') }}">Logout</a>
+</nav>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert {{ category }}">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+
+<section class="products-section">
+
+<h2 class="section-title">Our Collection</h2>
+
+<div class="filters-box">
+
+<input type="text" id="searchInput" placeholder="Search products...">
+
+<select id="categoryFilter">
+<option value="">All Categories</option>
+<option value="Sofa">Sofa</option>
+<option value="Chair">Chair</option>
+<option value="Lounge Chair">Lounge Chair</option>
+<option value="Dining Chair">Dining Chair</option>
+<option value="Stool">Stool</option>
+<option value="Tea Table">Tea Table</option>
+<option value="Side Table">Side Table</option>
+<option value="Dining Table">Dining Table</option>
+<option value="Desk">Desk</option>
+<option value="Bench">Bench</option>
+<option value="Console">Console</option>
+<option value="Wall Console">Wall Console</option>
+<option value="Bed">Bed</option>
+<option value="Day Bed">Day Bed</option>
+<option value="Storage">Storage</option>
+<option value="Lighting">Lighting</option>
+<option value="Mirror">Mirror</option>
+</select>
+
+</div>
+
+{% if products %}
+<div class="product-grid" id="productGrid">
+
+{% for prod in products %}
+<div 
+class="product-card"
+data-name="{{ prod.name|lower }}"
+data-category="{{ prod.category }}"
+data-price="{{ prod.price }}"
+data-image="{{ url_for('static', filename='uploads/' + prod.image) if prod.image else '' }}">
+
+<div class="product-image">
+
+{% if prod.image %}
+<img src="{{ url_for('static', filename='uploads/' + prod.image) }}" alt="{{ prod.name }}">
+{% else %}
+<div class="placeholder-img">No Image</div>
+{% endif %}
+
+</div>
+
+<div class="product-info">
+
+<h3>{{ prod.name }}</h3>
+<p class="category">{{ prod.category }}</p>
+<p class="price">₱{{ "%.2f"|format(prod.price) }}</p>
+
+<div class="product-buttons">
+
+<button onclick="quickView(this)">Quick View</button>
+
+<a href="{{ url_for('buy_product', product_id=prod.id) }}">
+<button class="buy-btn">Buy</button>
+</a>
+
+</div>
+
+</div>
+
+</div>
+{% endfor %}
+
+</div>
+
+{% else %}
+<p class="empty-text">No products available.</p>
+{% endif %}
+
+</section>
+
+<div id="quickModal" class="modal">
+
+<div class="modal-content">
+
+<span class="close" onclick="closeModal()">&times;</span>
+
+<img id="modalImage">
+
+<h3 id="modalName"></h3>
+
+<p id="modalCategory"></p>
+
+<p id="modalPrice"></p>
+
+</div>
+
+</div>
+
+
+<script>
+setTimeout(function(){
+const alert=document.querySelector(".alert.success");
+if(alert){
+alert.style.transition="opacity 0.5s ease";
+alert.style.opacity="0";
+setTimeout(()=>alert.remove(),500);
+}
+},3000);
+
+const searchInput=document.getElementById("searchInput");
+const categoryFilter=document.getElementById("categoryFilter");
+
+searchInput.addEventListener("keyup",filterProducts);
+categoryFilter.addEventListener("change",filterProducts);
+
+function filterProducts(){
+
+const search=searchInput.value.toLowerCase();
+const category=categoryFilter.value;
+
+const products=document.querySelectorAll(".product-card");
+
+products.forEach(card=>{
+
+const name=card.dataset.name;
+const cat=card.dataset.category;
+
+if(
+name.includes(search) &&
+(category==="" || cat===category)
+){
+card.style.display="block";
+}else{
+card.style.display="none";
+}
+
+});
+
+}
+
+function quickView(btn){
+
+const card=btn.closest(".product-card");
+
+document.getElementById("modalName").innerText=card.dataset.name;
+document.getElementById("modalCategory").innerText=card.dataset.category;
+document.getElementById("modalPrice").innerText="₱"+card.dataset.price;
+
+const img=card.dataset.image;
+
+if(img){
+document.getElementById("modalImage").src=img;
+}
+
+document.getElementById("quickModal").style.display="flex";
+
+}
+
+function closeModal(){
+document.getElementById("quickModal").style.display="none";
+}
+
+</script>
+{% endblock %}

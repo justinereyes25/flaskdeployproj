@@ -1,0 +1,92 @@
+.hero {
+    height: 100vh;
+    background: url('/static/images/wood1.jpg') center/cover no-repeat;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.hero-content {
+    position: relative;
+    text-align: center;
+    color: white;
+    max-width: 700px;
+    padding: 20px;
+    z-index: 2;
+}
+
+.hero-content h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 300;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.hero-content p {
+    font-size: 16px;
+    font-weight: 300;
+    margin-bottom: 30px;
+    color: #ddd;
+}
+
+.hero-btn {
+    display: inline-block;
+    padding: 14px 35px;
+    border: 1px solid white;
+    text-decoration: none;
+    color: white;
+    letter-spacing: 1px;
+    font-size: 14px;
+    transition: 0.3s ease;
+}
+
+.hero-btn:hover {
+    background: white;
+    color: black;
+}
+
+.features {
+    padding: 100px 80px;
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    text-align: center;
+    background: #0f0f0f;
+}
+
+.feature {
+    flex: 1;
+    text-align: center;
+}
+
+.feature img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    margin-bottom: 25px;
+    transition: transform 0.4s ease;
+}
+
+.feature img:hover {
+    transform: scale(1.05);
+}
+
+.feature h3 {
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 10px;
+}
+
+.feature p {
+    color: #aaa;
+    font-size: 14px;
+}

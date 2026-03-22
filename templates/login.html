@@ -1,0 +1,56 @@
+<title>{% block title %}WoodWorks{% endblock %}</title>
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <a href="{{ url_for('home') }}" class="logo">WOODWORKS</a>
+    <p class="welcome-text">Welcome back! Please login to your account.</p> 
+    
+<section class="auth-section">
+    <div class="auth-box">
+        <h2>Login</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert {% if category %}{{ category }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+        <form method="POST" id="login-form">
+            <input type="text" name="username" placeholder="Username" required>
+            <div class="password-field">
+                <input type="password" name="password" id="login-password" placeholder="Password" required>
+                <span id="toggle-login-password">Show</span>
+            </div>
+
+            <button type="submit">Login</button>
+        </form>
+
+        <a href="{{ url_for('register') }}" class="auth-link">
+            Register
+        </a>
+    </div>
+</section>
+
+<script>
+const passwordInput = document.getElementById("login-password");
+const toggle = document.getElementById("toggle-login-password");
+
+toggle.addEventListener("click", function() {
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggle.textContent = "Hide";
+    } else {
+        passwordInput.type = "password";
+        toggle.textContent = "Show";
+    }
+});
+</script>
+{% endblock %}

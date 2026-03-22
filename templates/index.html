@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}WoodWorks{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="hero">
+    <div class="hero-content">
+        <h2>Beautify Your Home with Style</h2>
+        <p>Explore our exclusive furniture collections crafted for comfort and design.</p>
+        <a href="{{ url_for('user_products') }}" class="hero-btn">Explore Collection</a>
+    </div>
+</section>
+
+<section class="features">
+
+    <div class="feature">
+        <img src="{{ url_for('static', filename='images/wood3.jpg') }}" alt="Modern Designs">
+        <h3>Modern Designs</h3>
+        <p>Stylish furniture that fits any space.</p>
+    </div>
+
+    <div class="feature">
+        <img src="{{ url_for('static', filename='images/wood.jpg') }}" alt="Premium Quality">
+        <h3>Premium Quality</h3>
+        <p>Built to last with high-quality materials.</p>
+    </div>
+
+    <div class="feature">
+        <img src="{{ url_for('static', filename='images/wood2.jpg') }}" alt="Affordable Prices">
+        <h3>Affordable Prices</h3>
+        <p>Furniture that looks expensive but isn’t.</p>
+    </div>
+
+</section>
+
+{% endblock %}

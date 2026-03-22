@@ -1,0 +1,113 @@
+<title>{% block title %}WoodWorks{% endblock %}</title>
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<header class="admin-navbar">
+    <div class="logo">WOODWORKS</div>
+    <nav>
+        <a href="{{ url_for('admin_dashboard') }}" class="active"> Transactions</a>
+        <a href="{{ url_for('admin_products') }}">Products</a>
+        <a href="{{ url_for('admin_users') }}">Users</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+</header>
+
+<div class="alerts-container"></div>
+
+<section class="admin-welcome">
+    <h2>Welcome, Admin!</h2>
+    <p>Manage products and users using the navigation above.</p>
+</section>
+
+<section class="admin-home">
+    <h3>Purchased Products</h3>
+
+    {% if purchases %}
+    <table class="purchase-table">
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Date Purchased</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in purchases %}
+            <tr id="purchase-{{ item.id }}">
+                <td>{{ item.username }}</td>
+                <td>{{ item.name }}</td>
+                <td>₱{{ "%.2f"|format(item.price) }}</td>
+                <td>{{ item.purchase_date }}</td>
+                <td>
+                    {% if item.status == 'cancelled' %}
+                        <span class="status-label cancelled">Cancelled</span>
+                    {% elif item.status == 'confirmed' %}
+                        <select class="status-dropdown" disabled>
+                            <option selected>Confirmed</option>
+                        </select>
+                    {% else %}
+                        <select class="status-dropdown" data-purchase-id="{{ item.id }}">
+                            <option value="pending" selected>Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                        </select>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No purchases yet.</p>
+    {% endif %}
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dropdowns = document.querySelectorAll('.status-dropdown');
+
+    dropdowns.forEach(drop => {
+        if (!drop.disabled) {
+            drop.addEventListener('change', () => {
+                const purchaseId = drop.dataset.purchaseId;
+                const newStatus = drop.value;
+
+                fetch(`/update_purchase_status_ajax/${purchaseId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() if csrf_token else "" }}'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const alertContainer = document.querySelector('.alerts-container');
+                        const alert = document.createElement('div');
+                        alert.className = 'alert success';
+                        alert.textContent = `Purchase status updated to ${newStatus}!`;
+                        alertContainer.appendChild(alert);
+
+                        setTimeout(() => alert.remove(), 3000);
+                        if (newStatus === 'confirmed') {
+                            drop.disabled = true;
+                        }
+                    } else {
+                        alert('Failed to update status.');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error updating status.');
+                });
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

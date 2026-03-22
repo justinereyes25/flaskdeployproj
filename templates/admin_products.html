@@ -1,0 +1,293 @@
+<title>{% block title %}WoodWorks - Admin Products{% endblock %}</title>
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_products.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<header class="admin-navbar">
+    <div class="logo">WOODWORKS</div>
+    <nav>
+        <a href="{{ url_for('dashboard') }}"> Transactions</a>
+        <a href="{{ url_for('admin_products') }}" class="active"> Products</a>
+        <a href="{{ url_for('admin_users') }}">Users</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+</header>
+
+<section class="admin-section">
+
+<h2 class="section-title">Manage Products</h2>
+
+<div class="add-product-box">
+
+<h3>Add New Product</h3>
+
+<form method="POST" enctype="multipart/form-data" class="admin-form">
+<input type="hidden" name="add_prod" value="1">
+<input type="text" name="name" placeholder="Product Name" required>
+<input type="number" step="0.01" name="price" placeholder="Price" required>
+<input type="number" name="stock" placeholder="Stock" required>
+
+<select name="category" required>
+<option value="" disabled selected>Select Category</option>
+<option value="Sofa">Sofa</option>
+<option value="Chair">Chair</option>
+<option value="Lounge Chair">Lounge Chair</option>
+<option value="Dining Chair">Dining Chair</option>
+<option value="Stool">Stool</option>
+<option value="Tea Table">Tea Table</option>
+<option value="Side Table">Side Table</option>
+<option value="Dining Table">Dining Table</option>
+<option value="Desk">Desk</option>
+<option value="Bench">Bench</option>
+<option value="Console">Console</option>
+<option value="Wall Console">Wall Console</option>
+<option value="Bed">Bed</option>
+<option value="Day Bed">Day Bed</option>
+<option value="Storage">Storage</option>
+<option value="Lighting">Lighting</option>
+<option value="Mirror">Mirror</option>
+</select>
+
+<input type="file" name="image" accept="image/*" onchange="previewImage(event,'addPreview')">
+<img id="addPreview" class="product-preview" style="display:none;" alt="Preview">
+
+<button type="submit" class="btn-add">Add Product</button>
+</form>
+</div>
+
+
+<div class="filters-box">
+<input type="text" id="searchInput" placeholder="Search by product name...">
+
+<select id="categoryFilter">
+<option value="">All Categories</option>
+<option value="Sofa">Sofa</option>
+<option value="Chair">Chair</option>
+<option value="Lounge Chair">Lounge Chair</option>
+<option value="Dining Chair">Dining Chair</option>
+<option value="Stool">Stool</option>
+<option value="Tea Table">Tea Table</option>
+<option value="Side Table">Side Table</option>
+<option value="Dining Table">Dining Table</option>
+<option value="Desk">Desk</option>
+<option value="Bench">Bench</option>
+<option value="Console">Console</option>
+<option value="Wall Console">Wall Console</option>
+<option value="Bed">Bed</option>
+<option value="Day Bed">Day Bed</option>
+<option value="Storage">Storage</option>
+<option value="Lighting">Lighting</option>
+<option value="Mirror">Mirror</option>
+</select>
+
+</div>
+
+<div class="existing-products">
+<h3>Existing Products</h3>
+
+<div class="table-wrapper">
+<table class="admin-table" id="productsTable">
+
+<thead>
+<tr>
+<th onclick="sortTable(0)">ID</th>
+<th onclick="sortTable(1)">Name</th>
+<th onclick="sortTable(2)">Price</th>
+<th onclick="sortTable(3)">Stock</th>
+<th onclick="sortTable(4)">Category</th>
+<th>Image</th>
+<th>Change Image</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for product in products %}
+<tr class="{% if product.stock <= 5 %}low-stock{% endif %}">
+
+<form method="POST" enctype="multipart/form-data">
+
+<td>
+{{ product.id }}
+<input type="hidden" name="id" value="{{ product.id }}">
+</td>
+
+<td>
+<input type="text" name="name" value="{{ product.name }}">
+</td>
+
+<td>
+<input type="number" step="0.01" name="price" value="{{ product.price }}">
+</td>
+
+<td>
+<input type="number" name="stock" value="{{ product.stock }}">
+</td>
+
+<td>
+<select name="category">
+<option value="Sofa" {% if product.category == "Sofa" %}selected{% endif %}>Sofa</option>
+<option value="Chair" {% if product.category == "Chair" %}selected{% endif %}>Chair</option>
+<option value="Lounge Chair" {% if product.category == "Lounge Chair" %}selected{% endif %}>Lounge Chair</option>
+<option value="Dining Chair" {% if product.category == "Dining Chair" %}selected{% endif %}>Dining Chair</option>
+<option value="Stool" {% if product.category == "Stool" %}selected{% endif %}>Stool</option>
+<option value="Tea Table" {% if product.category == "Tea Table" %}selected{% endif %}>Tea Table</option>
+<option value="Side Table" {% if product.category == "Side Table" %}selected{% endif %}>Side Table</option>
+<option value="Dining Table" {% if product.category == "Dining Table" %}selected{% endif %}>Dining Table</option>
+<option value="Desk" {% if product.category == "Desk" %}selected{% endif %}>Desk</option>
+<option value="Bench" {% if product.category == "Bench" %}selected{% endif %}>Bench</option>
+<option value="Console" {% if product.category == "Console" %}selected{% endif %}>Console</option>
+<option value="Wall Console" {% if product.category == "Wall Console" %}selected{% endif %}>Wall Console</option>
+<option value="Bed" {% if product.category == "Bed" %}selected{% endif %}>Bed</option>
+<option value="Day Bed" {% if product.category == "Day Bed" %}selected{% endif %}>Day Bed</option>
+<option value="Storage" {% if product.category == "Storage" %}selected{% endif %}>Storage</option>
+<option value="Lighting" {% if product.category == "Lighting" %}selected{% endif %}>Lighting</option>
+<option value="Mirror" {% if product.category == "Mirror" %}selected{% endif %}>Mirror</option>
+</select>
+</td>
+
+<td>
+{% if product.image %}
+<img src="{{ url_for('static', filename='uploads/' ~ product.image) }}" class="product-thumb">
+<p class="image-name">{{ product.image }}</p>
+{% else %}
+<span class="no-image">No Image</span>
+{% endif %}
+</td>
+
+<td>
+<input type="file" name="image" accept="image/*" onchange="previewImage(event,'preview{{ product.id }}')">
+<img id="preview{{ product.id }}" class="product-preview" style="display:none;">
+</td>
+
+<td class="actions">
+<button type="submit" name="update_prod" class="btn-update">Update</button>
+<button type="submit" name="delete_prod" class="btn-delete" onclick="return confirm('Delete this product?')">Delete</button>
+</td>
+
+</form>
+
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<script>
+function previewImage(event, previewId){
+
+const input = event.target;
+const preview = document.getElementById(previewId);
+
+if(input.files && input.files[0]){
+
+const reader = new FileReader();
+
+reader.onload = function(e){
+preview.src = e.target.result;
+preview.style.display="block";
+}
+
+reader.readAsDataURL(input.files[0]);
+
+}
+
+}
+
+const searchInput = document.getElementById("searchInput");
+const categoryFilter = document.getElementById("categoryFilter");
+
+searchInput.addEventListener("keyup", filterTable);
+categoryFilter.addEventListener("change", filterTable);
+
+function filterTable(){
+
+const searchText = searchInput.value.toLowerCase();
+const category = categoryFilter.value;
+
+const table = document.getElementById("productsTable");
+const tbody = table.getElementsByTagName("tbody")[0];
+const rows = tbody.getElementsByTagName("tr");
+
+for(let i=0;i<rows.length;i++){
+
+const cols = rows[i].getElementsByTagName("td");
+
+const name = cols[1].getElementsByTagName("input")[0].value.toLowerCase();
+const cat = cols[4].getElementsByTagName("select")[0].value;
+
+if(name.includes(searchText) && (category === "" || cat === category)){
+rows[i].style.display="";
+}else{
+rows[i].style.display="none";
+}
+
+}
+
+}
+
+function sortTable(n){
+
+const table=document.getElementById("productsTable");
+let switching=true;
+let dir="asc";
+let switchcount=0;
+
+while(switching){
+
+switching=false;
+
+const rows=table.rows;
+
+for(let i=1;i<rows.length-1;i++){
+
+let shouldSwitch=false;
+
+let x=rows[i].getElementsByTagName("TD")[n].innerText;
+let y=rows[i+1].getElementsByTagName("TD")[n].innerText;
+
+if(!isNaN(x)&&!isNaN(y)){
+x=parseFloat(x);
+y=parseFloat(y);
+}
+
+if(dir==="asc" && x>y){
+shouldSwitch=true;
+break;
+}
+
+if(dir==="desc" && x<y){
+shouldSwitch=true;
+break;
+}
+
+}
+
+if(shouldSwitch){
+rows[i].parentNode.insertBefore(rows[i+1],rows[i]);
+switching=true;
+switchcount++;
+}else{
+if(switchcount===0 && dir==="asc"){
+dir="desc";
+switching=true;
+}
+}
+
+}
+
+}
+</script>
+{% endblock %}
